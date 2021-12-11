@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="graph">
+  <Graph name="toyProject">
+    <nodes name="ClassA" id="1">
+      <attributes name="id"/>
+    </nodes>
+    <nodes name="ClassC" id="2"/>
+    <nodes name="ClassB" id="3">
+      <attributes name="id"/>
+      <attributes name="otherClass"/>
+    </nodes>
+    <nodes name="main" id="4"/>
+    <nodes name="ClassD" id="5"/>
+    <edges id="1"/>
+  </Graph>
+  <Graph name="java">
+    <nodes xsi:type="Graph" name="lang">
+      <nodes xsi:type="Graph" name="constant">
+        <edges id="4"/>
+      </nodes>
+      <nodes name="System" id="6">
+        <attributes name="out"/>
+      </nodes>
+      <nodes name="String" id="7"/>
+      <edges id="3"/>
+    </nodes>
+    <nodes xsi:type="Graph" name="io">
+      <nodes name="PrintStream" id="8"/>
+      <nodes name="FilterOutputStream" id="9"/>
+      <nodes name="OutputStream" id="10"/>
+      <edges id="5"/>
+    </nodes>
+    <edges id="2"/>
+  </Graph>
+  <Edge tar="ClassB" id="1" src="ClassC"/>
+  <Edge tar="ClassA" id="2" src="ClassD"/>
+  <Edge tar="FilterOutputStream" id="3" src="PrintStream"/>
+  <Edge tar="OutputStream" id="4" src="FilterOutputStream"/>
+  <Edge id="5"/>
+  <Attributes name="result"/>
+</xmi:XMI>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="graph">
+  <Graph name="(default package)"/>
+  <Graph name="javax"/>
+  <Graph name="swing"/>
+  <Graph name="event"/>
+  <Graph name="text"/>
+  <Graph name="table"/>
+  <Graph name="border"/>
+  <Graph name="accessibility"/>
+  <Graph name="java"/>
+  <Graph name="awt"/>
+  <Graph name="image"/>
+  <Graph name="event"/>
+  <Graph name="io"/>
+  <Graph name="util"/>
+  <Graph name="lang"/>
+  <Graph name="constant"/>
+  <Graph name="reflect"/>
+  <Graph name="invoke"/>
+  <Graph name="sql"/>
+  <Graph name="text"/>
+  <Graph name="net"/>
+  <Graph name="com"/>
+  <Graph name="itextpdf"/>
+  <Graph name="text"/>
+  <Graph name="pdf"/>
+  <Graph name="interfaces"/>
+  <Graph name="api"/>
+  <Graph name="tool"/>
+  <Graph name="xml"/>
+  <Graph name="html"/>
+  <Graph name="table"/>
+</xmi:XMI>

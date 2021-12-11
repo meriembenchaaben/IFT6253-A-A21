@@ -1,0 +1,127 @@
+-- @path KDMMetamodel=/project/model/kdm.ecore
+-- @path GraphMetamodel=/project/Graph.ecore
+
+
+
+module kdm2graph;
+create OUT : GraphMetamodel from IN : KDMMetamodel;
+
+rule KDM2Graph {
+	from
+		m: KDMMetamodel!Package(
+			m.oclIsTypeOf(KDMMetamodel!Package)
+		)
+	to
+		l: GraphMetamodel!Graph (
+			name <- m.name,
+			nodes<- m.codeElement,
+			edges <- thisModule.RelationShip2Edge(m)
+			
+		)
+	
+		
+}
+
+
+helper def: counterNode : Integer = 0;
+helper def: counterEdge2 : Integer = 0;
+helper def: counterEdge : Integer = 0;
+
+
+lazy rule RelationShip2Edge{
+	from
+		i: KDMMetamodel!Extends (
+			i.oclIsTypeOf(KDMMetamodel!Extends)
+		)
+	to
+		l: GraphMetamodel!Edge (
+			
+			
+			type <- 0
+
+		)
+		
+			do {
+			thisModule.counterEdge <- thisModule.counterEdge + 1;
+			l.id <- thisModule.counterEdge;
+			}
+}
+
+rule RelationShip2Edge_{
+	from
+		i: KDMMetamodel!Extends (
+			i.oclIsTypeOf(KDMMetamodel!Extends)
+		)
+	to
+		l: GraphMetamodel!Edge (
+			src<-i.from,
+			tar<-i.to,
+			type <- 0
+		
+			)
+			do {
+			thisModule.counterEdge2 <- thisModule.counterEdge2 + 1;
+			l.id <- thisModule.counterEdge2;
+			}
+}
+
+
+
+
+rule Class2Node {
+	from
+		m: KDMMetamodel!ClassUnit (
+			m.oclIsTypeOf(KDMMetamodel!ClassUnit)
+		)
+	to
+		l: GraphMetamodel!Node (
+			name <- m.name,
+			attributes <-m.codeElement		
+		
+			)
+		do {
+			thisModule.counterNode <- thisModule.counterNode + 1;
+			l.id <- thisModule.counterNode;
+			}
+			
+}
+
+
+
+rule storableUnits2Attributes{
+	from
+		m: KDMMetamodel!StorableUnit(
+			m.oclIsTypeOf(KDMMetamodel!StorableUnit)
+		)
+	to
+		l: GraphMetamodel!Attributes (
+			name <- m.name
+			 
+		)
+		
+
+}
+helper context KDMMetamodel!Datatype def : isPrimitiveType() : Boolean =
+	if (self.oclIsUndefined() or (self.oclIsKindOf(KDMMetamodel!PrimitiveType))) then
+		true
+	else
+		-- specific case for primitive objects
+		if ((self.name = 'String') or (self.name = 'Integer') 
+				or (self.name = 'Long') or (self.name = 'Short')
+				or (self.name = 'Float') or (self.name = 'Double')
+				or (self.name = 'Boolean') or (self.name = 'Number')) then
+			true
+		else
+			false
+		endif
+	endif;
+	
+helper context KDMMetamodel!Datatype def : getInheritanceLinks() : Sequence(KDMMetamodel!AbstractCodeRelationship) = 
+	if ((self.oclIsTypeOf(KDMMetamodel!EnumeratedType)) or (self.oclIsTypeOf(KDMMetamodel!ClassUnit))
+			or (self.oclIsTypeOf(KDMMetamodel!InterfaceUnit)) or (self.oclIsTypeOf(KDMMetamodel!TemplateUnit))) then
+		self.codeRelation->select(e | e.oclIsTypeOf(kdm!Extends) or e.oclIsTypeOf(kdm!Implements))
+	else
+		Sequence{}
+	endif;
+
+
