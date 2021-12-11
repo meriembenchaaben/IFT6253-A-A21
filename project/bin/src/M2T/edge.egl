@@ -1,0 +1,6 @@
+type,src,tar
+[%for (c in self.Edge){%]
+[%=c.type%], [%=  c.src.id %] ,[%=  c.tar.id %]
+[%}%]
+
+

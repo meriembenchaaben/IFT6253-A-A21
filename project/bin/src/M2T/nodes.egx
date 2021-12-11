@@ -1,0 +1,6 @@
+rule nodes 
+  transform self : graph!Graph {
+  template : "nodes.egl"
+  target : "Results/"+self.name+"_nodes.csv"
+}
+
