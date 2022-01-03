@@ -1,0 +1,13 @@
+id,name,attributes
+18, PrintStream ,[]
+19, FilterOutputStream ,[]
+20, OutputStream ,[]
+21, File ,[]
+22, FileInputStream ,[]
+23, InputStream ,[]
+24, FileNotFoundException ,[]
+25, IOException ,[]
+26, FileOutputStream ,[]
+27, ObjectInputStream ,[]
+28, ObjectOutputStream ,[]
+

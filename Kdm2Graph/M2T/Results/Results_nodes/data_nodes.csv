@@ -1,0 +1,11 @@
+id,name,attributes
+1, Data ,[ serialVersionUID; users; flights; cities; flightDaemons;]
+2, Admin ,[ serialVersionUID;]
+3, Flight ,[ serialVersionUID; ID; flightID; flightName; startTime; arriveTime; startCity; arriveCity; price; seatCapacity; flightStatus; passagers; distance; isDaemon;]
+4, Order ,[ serialVersionUID; passenger; flight; createDate; status;]
+5, DataManager ,[ users; flights; cities; flightDaemons; CHECKING_INTERVAL; DAY_OF_CREATE; INTERVAL_TO_CREATE; TIME_TO_TERMINATE; TIME_TO_PUBLISH; filename; file; timer; data; ChangeFlight; CreateFlight;]
+8, Passenger ,[ serialVersionUID; identityID; orderList;]
+9, User ,[ serialVersionUID; ID; userID; userName; passHash;]
+10, City ,[ serialVersionUID; ID; cityID; cityName; flightsIn; flightsOut;]
+11, FlightDaemon ,[ serialVersionUID; ID; flightDaemonID; flightName; startTime; arriveTime; period; startCity; arriveCity; price; seatCapacity; distance; status; children;]
+

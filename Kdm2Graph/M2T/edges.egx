@@ -1,0 +1,7 @@
+rule edges 
+  transform self : graph!Graph {
+  guard : self.name="AllEdges"
+  template : "edges.egl"
+  target : "Results/"+self.name +"_edges.csv"
+}
+

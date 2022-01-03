@@ -1,0 +1,4 @@
+id,name,attributes
+15, MainServer ,[ dataManager; currentUser; isLogin; isAdmin;]
+17, Main ,[ server; scanner;]
+

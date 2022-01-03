@@ -1,0 +1,5 @@
+id,type,source,target
+[%for (c in self.edges){%]
+[%if(c.src.isDefined() and c.tar.isDefined()){%][%=c.id%],[%=c.type%], [%=c.src.id%],[%=c.tar.id%][%}%]
+
+[%}%]

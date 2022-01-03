@@ -1,10 +1,32 @@
--- @path KDMMetamodel=/project/model/kdm.ecore
--- @path GraphMetamodel=/project/Graph.ecore
+-- @atlcompiler emftvm
+-- @path KDMMetamodel=/kdm2Graph/models/kdm.ecore 
+-- @path GraphMetamodel=/kdm2Graph/models/Graph.ecore
 
 
 
 module kdm2graph;
 create OUT : GraphMetamodel from IN : KDMMetamodel;
+
+
+--A Container of edges (graph) is created to have access later to all edges when doing M2T (EGL) 
+
+entrypoint rule initExternalElementsContainer() {
+	to externalPackage :GraphMetamodel!Graph(
+		name <- 'AllEdges'
+		
+	)
+	
+	do {
+		thisModule.externalGraph <- externalPackage;
+		
+	}
+}
+
+
+
+--Each Package in a OOP will produce a graph 
+
+
 
 rule KDM2Graph {
 	from
@@ -15,58 +37,16 @@ rule KDM2Graph {
 		l: GraphMetamodel!Graph (
 			name <- m.name,
 			nodes<- m.codeElement,
-			edges <- thisModule.RelationShip2Edge(m)
-			
-		)
-	
+			edges<- m.codeElement->collect(e|e.codeRelation)		
+			)
 		
 }
+
 
 
 helper def: counterNode : Integer = 0;
-helper def: counterEdge2 : Integer = 0;
-helper def: counterEdge : Integer = 0;
 
-
-lazy rule RelationShip2Edge{
-	from
-		i: KDMMetamodel!Extends (
-			i.oclIsTypeOf(KDMMetamodel!Extends)
-		)
-	to
-		l: GraphMetamodel!Edge (
-			
-			
-			type <- 0
-
-		)
-		
-			do {
-			thisModule.counterEdge <- thisModule.counterEdge + 1;
-			l.id <- thisModule.counterEdge;
-			}
-}
-
-rule RelationShip2Edge_{
-	from
-		i: KDMMetamodel!Extends (
-			i.oclIsTypeOf(KDMMetamodel!Extends)
-		)
-	to
-		l: GraphMetamodel!Edge (
-			src<-i.from,
-			tar<-i.to,
-			type <- 0
-		
-			)
-			do {
-			thisModule.counterEdge2 <- thisModule.counterEdge2 + 1;
-			l.id <- thisModule.counterEdge2;
-			}
-}
-
-
-
+--Class to Node Transformation :
 
 rule Class2Node {
 	from
@@ -86,42 +66,87 @@ rule Class2Node {
 			
 }
 
+helper def: counterEdge : Integer = 0;
+--Type 0 : inheritance Edge, KDM metamodel presents Extends classifier ->direct transformation 
 
+rule inheritance2Edge{
+	from
+		i: KDMMetamodel!Extends (
+			i.oclIsTypeOf(KDMMetamodel!Extends)
+		)
+	to
+		l: GraphMetamodel!Edge (
+			src<-i.from,
+			tar<-i.to,
+			type <- 0
+		
+			)
+			do {
+			thisModule.counterEdge <- thisModule.counterEdge + 1;
+			l.id <- thisModule.counterEdge;
+			}
+}
 
-rule storableUnits2Attributes{
+--Two Types of Attributes are distiguished, primitive and Non-Primitive (other objects)=> will be used to extract a relationship type
+--Primitive Type: 
+	
+rule storableUnits2PrimitiveAttributes{
 	from
 		m: KDMMetamodel!StorableUnit(
-			m.oclIsTypeOf(KDMMetamodel!StorableUnit)
+			m.oclIsTypeOf(KDMMetamodel!StorableUnit) and not (m.type.oclIsTypeOf(KDMMetamodel!ClassUnit))
 		)
 	to
 		l: GraphMetamodel!Attributes (
 			name <- m.name
-			 
+			
 		)
 		
 
 }
-helper context KDMMetamodel!Datatype def : isPrimitiveType() : Boolean =
-	if (self.oclIsUndefined() or (self.oclIsKindOf(KDMMetamodel!PrimitiveType))) then
-		true
-	else
-		-- specific case for primitive objects
-		if ((self.name = 'String') or (self.name = 'Integer') 
-				or (self.name = 'Long') or (self.name = 'Short')
-				or (self.name = 'Float') or (self.name = 'Double')
-				or (self.name = 'Boolean') or (self.name = 'Number')) then
-			true
-		else
-			false
-		endif
-	endif;
+
+--Non Primitive Type: The new association is also created 
+--(pb: the edge created won't be attached to initial package graph, thus I thought about creating the Container of edges  )
+
+rule storableUnits2NonPrimitiveAttributes{
+	from
+		m: KDMMetamodel!StorableUnit(
+			m.oclIsTypeOf(KDMMetamodel!StorableUnit) and (m.type.oclIsTypeOf(KDMMetamodel!ClassUnit))
+		)
+	to
+		l: GraphMetamodel!Attributes (
+			name <- m.name,
+			isNode<-m.type
+			 
+		),
+		--Create Association 
+		E : GraphMetamodel!Edge  (
+			src<-m.refImmediateComposite(),
+			tar<-m.type,
+			type <- 1	
+		)
+		do {
+			thisModule.counterEdge <- thisModule.counterEdge + 1;
+			E.id <- thisModule.counterEdge;
+			}
+}
+
+
+
+--endpoint rule (performed at the end of all transformations; matching rules) 
+endpoint rule manageDetachedEdges(){
+	do{
+	thisModule.externalGraph.edges <- thisModule.findAllAssociation();
+	}
+
+}
+
+
+helper def : findAllAssociation() : Sequence(GraphMetamodel!Edge) =
 	
-helper context KDMMetamodel!Datatype def : getInheritanceLinks() : Sequence(KDMMetamodel!AbstractCodeRelationship) = 
-	if ((self.oclIsTypeOf(KDMMetamodel!EnumeratedType)) or (self.oclIsTypeOf(KDMMetamodel!ClassUnit))
-			or (self.oclIsTypeOf(KDMMetamodel!InterfaceUnit)) or (self.oclIsTypeOf(KDMMetamodel!TemplateUnit))) then
-		self.codeRelation->select(e | e.oclIsTypeOf(kdm!Extends) or e.oclIsTypeOf(kdm!Implements))
-	else
-		Sequence{}
-	endif;
+	 GraphMetamodel!Edge.allInstances() ;
+	
+helper def: externalGraph : GraphMetamodel!Graph = OclUndefined;
+
+
 
 
