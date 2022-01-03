@@ -1,0 +1,153 @@
+-- @atlcompiler emftvm
+-- @path KDMMetamodel=/send/ATLauncher/metamodels/kdm.ecore
+-- @path GraphMetamodel=/send/ATLauncher/metamodels/Graph.ecore
+
+module KDM2GraphTransformation;
+create OUT : GraphMetamodel from IN : KDMMetamodel;
+
+
+
+
+--A Container of edges (graph) is created to have access later to all edges when doing M2T (EGL) 
+
+entrypoint rule initExternalElementsContainer() {
+	to externalPackage :GraphMetamodel!Graph(
+		name <- 'AllEdges'
+		
+	)
+	
+	do {
+		thisModule.externalGraph <- externalPackage;
+		
+	}
+}
+
+
+
+--Each Package in a OOP will produce a graph 
+
+
+
+rule KDM2Graph {
+	from
+		m: KDMMetamodel!Package(
+			m.oclIsTypeOf(KDMMetamodel!Package)
+		)
+	to
+		l: GraphMetamodel!Graph (
+			name <- m.name,
+			nodes<- m.codeElement,
+			edges<- m.codeElement->collect(e|e.codeRelation)		
+			)
+		
+}
+
+
+
+helper def: counterNode : Integer = 0;
+
+--Class to Node Transformation :
+
+rule Class2Node {
+	from
+		m: KDMMetamodel!ClassUnit (
+			m.oclIsTypeOf(KDMMetamodel!ClassUnit)
+		)
+	to
+		l: GraphMetamodel!Node (
+			name <- m.name,
+			attributes <-m.codeElement		
+		
+			)
+		do {
+			thisModule.counterNode <- thisModule.counterNode + 1;
+			l.id <- thisModule.counterNode;
+			}
+			
+}
+
+helper def: counterEdge : Integer = 0;
+--Type 0 : inheritance Edge, KDM metamodel presents Extends classifier ->direct transformation 
+
+rule inheritance2Edge{
+	from
+		i: KDMMetamodel!Extends (
+			i.oclIsTypeOf(KDMMetamodel!Extends)
+		)
+	to
+		l: GraphMetamodel!Edge (
+			src<-i.from,
+			tar<-i.to,
+			type <- 0
+		
+			)
+			do {
+			thisModule.counterEdge <- thisModule.counterEdge + 1;
+			l.id <- thisModule.counterEdge;
+			}
+}
+
+--Two Types of Attributes are distiguished, primitive and Non-Primitive (other objects)=> will be used to extract a relationship type
+--Primitive Type: 
+	
+rule storableUnits2PrimitiveAttributes{
+	from
+		m: KDMMetamodel!StorableUnit(
+			m.oclIsTypeOf(KDMMetamodel!StorableUnit) and not (m.type.oclIsTypeOf(KDMMetamodel!ClassUnit))
+		)
+	to
+		l: GraphMetamodel!Attributes (
+			name <- m.name
+			
+		)
+		
+
+}
+
+--Non Primitive Type: The new association is also created 
+--(pb: the edge created won't be attached to initial package graph, thus I thought about creating the Container of edges  )
+
+rule storableUnits2NonPrimitiveAttributes{
+	from
+		m: KDMMetamodel!StorableUnit(
+			m.oclIsTypeOf(KDMMetamodel!StorableUnit) and (m.type.oclIsTypeOf(KDMMetamodel!ClassUnit))
+		)
+	to
+		l: GraphMetamodel!Attributes (
+			name <- m.name,
+			isNode<-m.type
+			 
+		),
+		--Create Association 
+		E : GraphMetamodel!Edge  (
+			src<-m.refImmediateComposite(),
+			tar<-m.type,
+			type <- 1	
+		)
+		do {
+			thisModule.counterEdge <- thisModule.counterEdge + 1;
+			E.id <- thisModule.counterEdge;
+			}
+}
+
+
+
+--endpoint rule (performed at the end of all transformations; matching rules) 
+endpoint rule manageDetachedEdges(){
+	do{
+	thisModule.externalGraph.edges <- thisModule.findAllAssociation();
+	}
+
+}
+
+
+helper def : findAllAssociation() : Sequence(GraphMetamodel!Edge) =
+	
+	 GraphMetamodel!Edge.allInstances() ;
+	
+helper def: externalGraph : GraphMetamodel!Graph = OclUndefined;
+
+--Gloabal Variables for to manage the node ids and the Edges ids (for the mapping later)
+
+
+
