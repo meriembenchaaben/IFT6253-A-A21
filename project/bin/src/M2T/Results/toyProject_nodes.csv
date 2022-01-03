@@ -1,7 +1,0 @@
-id,name,attributes
-0, ClassA ,[ id;]
-0, ClassB ,[ id; otherClass;]
-0, ClassHeriting ,[]
-0, main ,[]
-
-

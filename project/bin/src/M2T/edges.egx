@@ -1,6 +1,0 @@
-rule edges 
-  transform self : graph!Graph {
-  template : "edge.egl"
-  target : "Results/"+self.name+"_edges.txt"
-}
-

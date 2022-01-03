@@ -1,6 +1,0 @@
-id,name,attributes
-[%for (c in self.nodes){%]
-[%=c.id%], [%=  c.name %] ,[[%for(j in c.attributes){%] [%=  j.name %];[%}%]]
-[%}%]
-
-
